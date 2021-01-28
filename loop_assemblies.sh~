@@ -1,0 +1,21 @@
+# $1 is the name of the fastq.gz folder
+# $2 is if it is
+
+function join { local IFS="$1"; shift; echo "$*"; }
+
+cd $1
+mkdir R1s
+cp *_R1_* R1s/
+cd R1s
+gunzip -f *.gz
+echo "hello"
+for i in *
+do
+    echo $i
+    sample=(${i//"_"/ })
+    i2=${sample[0]}
+    sample2=("${sample[@]:1")
+    i3=$(join , ${sample2[@]})
+    echo "$i2"
+    echo "$i3"
+done
