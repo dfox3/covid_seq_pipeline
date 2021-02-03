@@ -60,7 +60,6 @@ echo "Covid-seq pipeline"
 for i in *.fastq.gz
 do
     ## saving sample name info to variables
-    echo $i
     sample=(${i//"_"/ })
     i2=${sample[0]}
     sample2=("${sample[@]:1}")
@@ -92,16 +91,21 @@ do
     ## ivar primer trimming
     echo "ivar trim"
     ivar trim -b $DIR/references/artic-V3-primers.bed -p trimmed_$i2 -i "sorted_"$i2".bam" -q 15 -m 5 -s 4 -e > ../out/trim_reports/"$i2"_trim.stats.txt
+    echo "samtools sort"
+    samtools sort -@ 8 trimmed_$i2".bam" -o sorted_trimmed_$i2".bam"
+    echo "samtools index"
+    samtools index sorted_trimmed_$i2".bam"
     cp ../out/trim_reports/"$i2"_trim.stats.txt echo_txt.txt
     echo "$(cat echo_txt.txt)"
 
     ## ivar variant calling, requires samtools mpileup formatted data as input
     echo "ivar variants"
-    samtools mpileup -aa -A -d 600000 -B -Q 0 "sorted_"$i2".bam" | ivar variants -p ../out/variants/"$i2"_var -q 20 -t 0.03 -r $DIR/references/sars-cov-2.fasta -g $DIR/references/sars-cov-2_amino.gff3
+    samtools mpileup -aa -A -d 600000 -B -Q 0 sorted_trimmed_$i2".bam" -o trimmed_$i2.pileup
+    echo "$(cat trimmed_$i2.pileup)" | ivar variants -p ../out/variants/"$i2"_var -q 20 -t 0.03 -r $DIR/references/sars-cov-2.fasta -g $DIR/references/sars-cov-2_amino.gff3
 
     ## ivar consensus, requires samtools mpileup formatted data as input
     echo "ivar consensus"
-    samtools mpileup -aa -A -d 600000 -B -Q 0 "sorted_"$i2".bam" | ivar consensus -p ../out/consensus/"$i2"_consensus -q 20 -t 0 > ../out/consensus/"$s"_consensus.stats.txt
+    echo "$(cat trimmed_$i2.pileup)" | ivar consensus -p ../out/consensus/"$i2"_consensus -q 20 -t 0 > ../out/consensus/"$s"_consensus.stats.txt
     cp ../out/consensus/"$s"_consensus.stats.txt echo_txt.txt
     echo "$(cat echo_txt.txt)"
 done
