@@ -97,7 +97,7 @@ do
 
     ## ivar variant calling, requires samtools mpileup formatted data as input
     echo "ivar variants"
-    samtools mpileup -aa -A -d 600000 -B -Q 0 "sorted_"$i2".bam" | ivar variants -p ../out/variants/"$i2"_var -q 20 -t 0.03 -r $DIR/references/sars-cov-2.fasta -g $DIR/references/wuhan_amino.gff3
+    samtools mpileup -aa -A -d 600000 -B -Q 0 "sorted_"$i2".bam" | ivar variants -p ../out/variants/"$i2"_var -q 20 -t 0.03 -r $DIR/references/sars-cov-2.fasta -g $DIR/references/sars-cov-2_amino.gff3
 
     ## ivar consensus, requires samtools mpileup formatted data as input
     echo "ivar consensus"
